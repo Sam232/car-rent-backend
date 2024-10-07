@@ -1,0 +1,41 @@
+version: '3.7'
+
+services:
+  mariadb:
+    container_name: carrent_mariadb
+    image: mariadb:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: carrent
+    ports:
+      - "3306:3306"
+    networks:
+      - carrent_network
+  nginx:
+    container_name: carrent_nginx
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - carrent_network
+  backend:
+    container_name: carrent_backend
+    build:
+      context: .
+      dockerfile: Dockerfile.jvm
+    depends_on:
+      - mariadb
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - carrent_network
+networks:
+  carrent_network:
+    driver: bridge
+    name: carrent_network
